@@ -175,6 +175,9 @@ class MaterialVideoControlsThemeData {
   /// Factor to speed up on long press.
   final double speedUpFactor;
 
+  // On vertical gesture
+  final bool onVerticalGesture;
+
   /// Gesture sensitivity on vertical drag gestures, the higher the value is the less sensitive the gesture.
   final double verticalGestureSensitivity;
 
@@ -294,6 +297,7 @@ class MaterialVideoControlsThemeData {
     this.speedUpOnLongPress = false,
     this.speedUpFactor = 2.0,
     this.verticalGestureSensitivity = 100,
+    this.onVerticalGesture = true,
     this.horizontalGestureSensitivity = 1000,
     this.backdropColor = const Color(0x66000000),
     this.padding,
@@ -355,6 +359,7 @@ class MaterialVideoControlsThemeData {
     bool? speedUpOnLongPress,
     double? speedUpFactor,
     double? verticalGestureSensitivity,
+    bool? onVerticalGesture,
     double? horizontalGestureSensitivity,
     Color? backdropColor,
     Duration? controlsHoverDuration,
@@ -411,6 +416,7 @@ class MaterialVideoControlsThemeData {
       visibleOnMount: visibleOnMount ?? this.visibleOnMount,
       speedUpOnLongPress: speedUpOnLongPress ?? this.speedUpOnLongPress,
       speedUpFactor: speedUpFactor ?? this.speedUpFactor,
+      onVerticalGesture: onVerticalGesture ?? this.onVerticalGesture,
       verticalGestureSensitivity:
           verticalGestureSensitivity ?? this.verticalGestureSensitivity,
       horizontalGestureSensitivity:
@@ -946,40 +952,45 @@ class _MaterialVideoControlsState extends State<_MaterialVideoControls> {
                           onHorizontalDragEnd: (details) {
                             onHorizontalDragEnd();
                           },
-                          onVerticalDragUpdate: (e) async {
-                            final delta = e.delta.dy;
-                            final Offset position = e.localPosition;
+                          onVerticalDragUpdate: _theme(context)
+                                  .onVerticalGesture
+                              ? (e) async {
+                                  final delta = e.delta.dy;
+                                  final Offset position = e.localPosition;
 
-                            if (position.dx <= widgetWidth(context) / 2) {
-                              // Left side of screen swiped
-                              if ((!mount &&
-                                      _theme(context).brightnessGesture) ||
-                                  (_theme(context).brightnessGesture &&
-                                      _theme(context)
-                                          .gesturesEnabledWhileControlsVisible)) {
-                                final brightness = _brightnessValue -
-                                    delta /
-                                        _theme(context)
-                                            .verticalGestureSensitivity;
-                                final result = brightness.clamp(0.0, 1.0);
-                                setBrightness(result);
-                              }
-                            } else {
-                              // Right side of screen swiped
+                                  if (position.dx <= widgetWidth(context) / 2) {
+                                    // Left side of screen swiped
+                                    if ((!mount &&
+                                            _theme(context)
+                                                .brightnessGesture) ||
+                                        (_theme(context).brightnessGesture &&
+                                            _theme(context)
+                                                .gesturesEnabledWhileControlsVisible)) {
+                                      final brightness = _brightnessValue -
+                                          delta /
+                                              _theme(context)
+                                                  .verticalGestureSensitivity;
+                                      final result = brightness.clamp(0.0, 1.0);
+                                      setBrightness(result);
+                                    }
+                                  } else {
+                                    // Right side of screen swiped
 
-                              if ((!mount && _theme(context).volumeGesture) ||
-                                  (_theme(context).volumeGesture &&
-                                      _theme(context)
-                                          .gesturesEnabledWhileControlsVisible)) {
-                                final volume = _volumeValue -
-                                    delta /
-                                        _theme(context)
-                                            .verticalGestureSensitivity;
-                                final result = volume.clamp(0.0, 1.0);
-                                setVolume(result);
-                              }
-                            }
-                          },
+                                    if ((!mount &&
+                                            _theme(context).volumeGesture) ||
+                                        (_theme(context).volumeGesture &&
+                                            _theme(context)
+                                                .gesturesEnabledWhileControlsVisible)) {
+                                      final volume = _volumeValue -
+                                          delta /
+                                              _theme(context)
+                                                  .verticalGestureSensitivity;
+                                      final result = volume.clamp(0.0, 1.0);
+                                      setVolume(result);
+                                    }
+                                  }
+                                }
+                              : null,
                           child: Container(
                             color: const Color(0x00000000),
                           ),
